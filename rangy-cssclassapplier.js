@@ -1,459 +1,423 @@
-rangy.createModule("CssClassApplier", function(a, b) {
-    function f(a) {
-        return a.replace(/^\s\s*/, "").replace(/\s\s*$/, "")
+rangy.createModule("CssClassApplier", function(e, t) {
+    function n(e) {
+        return e.replace(/^\s\s*/, "").replace(/\s\s*$/, "")
     }
 
-    function g(a, b) {
-        return a.className && (new RegExp("(?:^|\\s)" + b + "(?:\\s|$)")).test(a.className)
+    function i(e, t) {
+        return e.className && new RegExp("(?:^|\\s)" + t + "(?:\\s|$)").test(e.className)
     }
 
-    function h(a, b) {
-        a.className ? g(a, b) || (a.className += " " + b) : a.className = b
+    function s(e, t) {
+        e.className ? i(e, t) || (e.className += " " + t) : e.className = t
     }
 
-    function j(a) {
-        return a.split(/\s+/).sort().join(" ")
+    function o(e) {
+        return e.split(/\s+/).sort().join(" ")
     }
 
-    function k(a) {
-        return j(a.className)
+    function r(e) {
+        return o(e.className)
     }
 
-    function l(a, b) {
-        return k(a) == k(b)
+    function a(e, t) {
+        return r(e) == r(t)
     }
 
-    function m(a, b) {
-        return a.compareBoundaryPoints(b.START_TO_START, b)
+    function l(e, t) {
+        return e.compareBoundaryPoints(t.START_TO_START, t)
     }
 
-    function n(a) {
-        for (var b = 0, c = a.length, d, e, f; b < c; ++b);
+    function d(e, t, n, i, s) {
+        var o = e.node,
+            r = e.offset,
+            a = o,
+            l = r;
+        o == i && r > s && l++, o == t && (r == n || r == n + 1) && (a = i, l += s - n), o == t && r > n + 1 && l--, e.node = a, e.offset = l
     }
 
-    function o(a) {
-        var b = a.slice(0);
-        b.sort(m);
-        var c = [];
-        for (var d = 1, e = a.length, f, g = a[0]; d < e; ++d) f = a[d], f.intersectsOrTouchesRange(g) ? g = g.union(f) : (c.push(g), g = f);
-        return c.push(g), c
+    function u(e, t, n, i) {
+        -1 == n && (n = t.childNodes.length);
+        for (var s, o = e.parentNode, r = M.getNodeIndex(e), a = 0; s = i[a++];) d(s, o, r, t, n);
+        t.childNodes.length == n ? t.appendChild(e) : t.insertBefore(e, t.childNodes[n])
     }
 
-    function p(a, b, c, d, e) {
-        var f = a.node,
-            g = a.offset,
-            h = f,
-            i = g;
-        f == d && g > e && i++, f == b && (g == c || g == c + 1) && (h = d, i += e - c), f == b && g > c + 1 && i--, a.node = h, a.offset = i
+    function f(e, t, n, i, s) {
+        for (var o, r = []; o = e.firstChild;) u(o, t, n++, s), r.push(o);
+        return i && e.parentNode.removeChild(e), r
     }
 
-    function q(a, b, d, e) {
-        d == -1 && (d = b.childNodes.length);
-        var f = a.parentNode,
-            g = c.getNodeIndex(a);
-        for (var h = 0, i; i = e[h++];) p(i, f, g, b, d);
-        b.childNodes.length == d ? b.appendChild(a) : b.insertBefore(a, b.childNodes[d])
+    function p(e, t) {
+        return f(e, e.parentNode, M.getNodeIndex(e), !0, t)
     }
 
-    function r(a, b, c, d, e) {
-        var f, g = [];
-        while (f = a.firstChild) q(f, b, c++, e), g.push(f);
-        return d && a.parentNode.removeChild(a), g
+    function h(e, t) {
+        var n = e.cloneRange();
+        n.selectNodeContents(t);
+        var i = n.intersection(e),
+            s = i ? i.toString() : "";
+        return n.detach(), "" != s
     }
 
-    function s(a, b) {
-        return r(a, a.parentNode, c.getNodeIndex(a), !0, b)
-    }
-
-    function t(a, b) {
-        var c = a.cloneRange();
-        c.selectNodeContents(b);
-        var d = c.intersection(a),
-            e = d ? d.toString() : "";
-        return c.detach(), e != ""
-    }
-
-    function u(a) {
-        return a.getNodes([3], function(b) {
-            return t(a, b)
+    function c(e) {
+        return e.getNodes([3], function(t) {
+            return h(e, t)
         })
     }
 
-    function v(a, b) {
-        if (a.attributes.length != b.attributes.length) return !1;
-        for (var c = 0, d = a.attributes.length, e, f, g; c < d; ++c) {
-            e = a.attributes[c], g = e.name;
-            if (g != "class") {
-                f = b.attributes.getNamedItem(g);
-                if (e.specified != f.specified) return !1;
-                if (e.specified && e.nodeValue !== f.nodeValue) return !1
+    function g(e, t) {
+        if (e.attributes.length != t.attributes.length) return !1;
+        for (var n, i, s, o = 0, r = e.attributes.length; r > o; ++o)
+            if (n = e.attributes[o], s = n.name, "class" != s) {
+                if (i = t.attributes.getNamedItem(s), n.specified != i.specified) return !1;
+                if (n.specified && n.nodeValue !== i.nodeValue) return !1
             }
-        }
         return !0
     }
 
-    function w(a, b) {
-        for (var d = 0, e = a.attributes.length, f; d < e; ++d) {
-            f = a.attributes[d].name;
-            if ((!b || !c.arrayContains(b, f)) && a.attributes[d].specified && f != "class") return !0
-        }
+    function m(e, t) {
+        for (var n, i = 0, s = e.attributes.length; s > i; ++i)
+            if (n = e.attributes[i].name, (!t || !M.arrayContains(t, n)) && e.attributes[i].specified && "class" != n) return !0;
         return !1
     }
 
-    function x(a, b) {
-        var c;
-        for (var d in b)
-            if (b.hasOwnProperty(d)) {
-                c = b[d];
-                if (typeof c == "object") {
-                    if (!x(a[d], c)) return !1
-                } else if (a[d] !== c) return !1
-            }
+    function N(e, t) {
+        var n;
+        for (var i in t)
+            if (t.hasOwnProperty(i))
+                if (n = t[i], "object" == typeof n) {
+                    if (!N(e[i], n)) return !1
+                } else if (e[i] !== n) return !1;
         return !0
     }
 
-    function A(a) {
-        var b;
-        return a && a.nodeType == 1 && ((b = a.parentNode) && b.nodeType == 9 && b.designMode == "on" || z(a) && !z(a.parentNode))
+    function y(e) {
+        var t;
+        return e && 1 == e.nodeType && ((t = e.parentNode) && 9 == t.nodeType && "on" == t.designMode || j(e) && !j(e.parentNode))
     }
 
-    function B(a) {
-        return (z(a) || a.nodeType != 1 && z(a.parentNode)) && !A(a)
+    function v(e) {
+        return (j(e) || 1 != e.nodeType && j(e.parentNode)) && !y(e)
     }
 
-    function D(a) {
-        return a && a.nodeType == 1 && !C.test(y(a, "display"))
+    function T(e) {
+        return e && 1 == e.nodeType && !z.test(W(e, "display"))
     }
 
-    function F(a) {
-        if (a.data.length == 0) return !0;
-        if (E.test(a.data)) return !1;
-        var b = y(a.parentNode, "whiteSpace");
-        switch (b) {
+    function C(e) {
+        if (0 == e.data.length) return !0;
+        if (D.test(e.data)) return !1;
+        var t = W(e.parentNode, "whiteSpace");
+        switch (t) {
             case "pre":
             case "pre-wrap":
             case "-moz-pre-wrap":
                 return !1;
             case "pre-line":
-                if (/[\r\n]/.test(a.data)) return !1
+                if (/[\r\n]/.test(e.data)) return !1
         }
-        return D(a.previousSibling) || D(a.nextSibling)
+        return T(e.previousSibling) || T(e.nextSibling)
     }
 
-    function G(a) {
-        var b = [],
-            c, e;
-        for (c = 0; e = a[c++];) b.push(new d(e.startContainer, e.startOffset), new d(e.endContainer, e.endOffset));
-        return b
+    function E(e) {
+        var t, n, i = [];
+        for (t = 0; n = e[t++];) i.push(new I(n.startContainer, n.startOffset), new I(n.endContainer, n.endOffset));
+        return i
     }
 
-    function H(a, b) {
-        for (var c = 0, d, e, f, g = a.length; c < g; ++c) d = a[c], e = b[c * 2], f = b[c * 2 + 1], d.setStartAndEnd(e.node, e.offset, f.node, f.offset)
+    function S(e, t) {
+        for (var n, i, s, o = 0, r = e.length; r > o; ++o) n = e[o], i = t[2 * o], s = t[2 * o + 1], n.setStartAndEnd(i.node, i.offset, s.node, s.offset)
     }
 
-    function I(a, b) {
-        var c = [];
-        for (var d = 0, e = a.length; d < e; ++d) a[d] !== b && c.push(a[d]);
-        return c
+    function b(e, t) {
+        return M.isCharacterDataNode(e) ? 0 == t ? !!e.previousSibling : t == e.length ? !!e.nextSibling : !0 : t > 0 && t < e.childNodes.length
     }
 
-    function J(a, b) {
-        return c.isCharacterDataNode(a) ? b == 0 ? !!a.previousSibling : b == a.length ? !!a.nextSibling : !0 : b > 0 && b < a.childNodes.length
-    }
-
-    function K(a, d, e, f) {
-        var g, h, i = e == 0;
-        if (c.isAncestorOf(d, a)) return a;
-        if (c.isCharacterDataNode(d)) {
-            var j = c.getNodeIndex(d);
-            if (e == 0) e = j;
+    function R(e, n, i, s) {
+        var o, r, a = 0 == i;
+        if (M.isAncestorOf(n, e)) return e;
+        if (M.isCharacterDataNode(n)) {
+            var l = M.getNodeIndex(n);
+            if (0 == i) i = l;
             else {
-                if (e != d.length) throw b.createError("splitNodeAt() should not be called with offset in the middle of a data node (" + e + " in " + d.data);
-                e = j + 1
+                if (i != n.length) throw t.createError("splitNodeAt() should not be called with offset in the middle of a data node (" + i + " in " + n.data);
+                i = l + 1
             }
-            d = d.parentNode
+            n = n.parentNode
         }
-        if (J(d, e)) {
-            g = d.cloneNode(!1), h = d.parentNode, g.id && g.removeAttribute("id");
-            var k, l = 0;
-            while (k = d.childNodes[e]) q(k, g, l++, f);
-            return q(g, h, c.getNodeIndex(d) + 1, f), d == a ? g : K(a, h, c.getNodeIndex(g), f)
+        if (b(n, i)) {
+            o = n.cloneNode(!1), r = n.parentNode, o.id && o.removeAttribute("id");
+            for (var d, f = 0; d = n.childNodes[i];) u(d, o, f++, s);
+            return u(o, r, M.getNodeIndex(n) + 1, s), n == e ? o : R(e, r, M.getNodeIndex(o), s)
         }
-        if (a != d) {
-            g = d.parentNode;
-            var m = c.getNodeIndex(d);
-            return i || m++, K(a, g, m, f)
+        if (e != n) {
+            o = n.parentNode;
+            var p = M.getNodeIndex(n);
+            return a || p++, R(e, o, p, s)
         }
-        return a
+        return e
     }
 
-    function L(a, b) {
-        return a.tagName == b.tagName && l(a, b) && v(a, b) && y(a, "display") == "inline" && y(b, "display") == "inline"
+    function x(e, t) {
+        return e.tagName == t.tagName && a(e, t) && g(e, t) && "inline" == W(e, "display") && "inline" == W(t, "display")
     }
 
-    function M(a) {
-        var b = a ? "nextSibling" : "previousSibling";
-        return function(c, d) {
-            var e = c.parentNode,
-                f = c[b];
-            if (f) {
-                if (f && f.nodeType == 3) return f
-            } else if (d) {
-                f = e[b];
-                if (f && f.nodeType == 1 && L(e, f)) return f[a ? "firstChild" : "lastChild"]
-            }
+    function A(e) {
+        var t = e ? "nextSibling" : "previousSibling";
+        return function(n, i) {
+            var s = n.parentNode,
+                o = n[t];
+            if (o) {
+                if (o && 3 == o.nodeType) return o
+            } else if (i && (o = s[t], o && 1 == o.nodeType && x(s, o))) return o[e ? "firstChild" : "lastChild"];
             return null
         }
     }
 
-    function P(a) {
-        this.isElementMerge = a.nodeType == 1, this.firstTextNode = this.isElementMerge ? a.lastChild : a, this.textNodes = [this.firstTextNode]
+    function w(e) {
+        this.isElementMerge = 1 == e.nodeType, this.firstTextNode = this.isElementMerge ? e.lastChild : e, this.textNodes = [this.firstTextNode]
     }
 
-    function S(a, b, c) {
-        this.cssClass = a;
-        var d, e, g, h, i = null;
-        if (typeof b == "object" && b !== null) {
-            c = b.tagNames, i = b.elementProperties;
-            for (e = 0; h = Q[e++];) b.hasOwnProperty(h) && (this[h] = b[h]);
-            d = b.normalize
-        } else d = b;
-        this.normalize = typeof d == "undefined" ? !0 : d, this.attrExceptions = [];
-        var j = document.createElement(this.elementTagName);
-        this.elementProperties = this.copyPropertiesToElement(i, j, !0), this.elementSortedClassName = this.elementProperties.hasOwnProperty("className") ? this.elementProperties.className : a, this.applyToAnyTagName = !1;
-        var k = typeof c;
-        if (k == "string") c == "*" ? this.applyToAnyTagName = !0 : this.tagNames = f(c.toLowerCase()).split(/\s*,\s*/);
-        else if (k == "object" && typeof c.length == "number") {
-            this.tagNames = [];
-            for (e = 0, g = c.length; e < g; ++e) c[e] == "*" ? this.applyToAnyTagName = !0 : this.tagNames.push(c[e].toLowerCase())
-        } else this.tagNames = [this.elementTagName]
+    function P(e, t, i) {
+        this.cssClass = e;
+        var s, o, r, a, l = null;
+        if ("object" == typeof t && null !== t) {
+            for (i = t.tagNames, l = t.elementProperties, o = 0; a = V[o++];) t.hasOwnProperty(a) && (this[a] = t[a]);
+            s = t.normalize
+        } else s = t;
+        this.normalize = "undefined" == typeof s ? !0 : s, this.attrExceptions = [];
+        var d = document.createElement(this.elementTagName);
+        this.elementProperties = this.copyPropertiesToElement(l, d, !0), this.elementSortedClassName = this.elementProperties.hasOwnProperty("className") ? this.elementProperties.className : e, this.applyToAnyTagName = !1;
+        var u = typeof i;
+        if ("string" == u) "*" == i ? this.applyToAnyTagName = !0 : this.tagNames = n(i.toLowerCase()).split(/\s*,\s*/);
+        else if ("object" == u && "number" == typeof i.length)
+            for (this.tagNames = [], o = 0, r = i.length; r > o; ++o) "*" == i[o] ? this.applyToAnyTagName = !0 : this.tagNames.push(i[o].toLowerCase());
+        else this.tagNames = [this.elementTagName]
     }
 
-    function T(a, b, c) {
-        return new S(a, b, c)
+    function O(e, t, n) {
+        return new P(e, t, n)
     }
-    a.requireModules(["WrappedSelection", "WrappedRange"]);
-    var c = a.dom,
-        d = c.DomPosition,
-        e = "span",
-        i = function() {
-            function a(a, b, c) {
-                return b && c ? " " : ""
+    e.requireModules(["WrappedSelection", "WrappedRange"]);
+    var W, M = e.dom,
+        I = M.DomPosition,
+        L = "span",
+        B = function() {
+            function e(e, t, n) {
+                return t && n ? " " : ""
             }
-            return function(b, c) {
-                b.className && (b.className = b.className.replace(new RegExp("(^|\\s)" + c + "(\\s|$)"), a))
+            return function(t, n) {
+                t.className && (t.className = t.className.replace(new RegExp("(^|\\s)" + n + "(\\s|$)"), e))
             }
-        }(),
-        y;
-    typeof window.getComputedStyle != "undefined" ? y = function(a, b) {
-        return c.getWindow(a).getComputedStyle(a, null)[b]
-    } : typeof document.documentElement.currentStyle != "undefined" ? y = function(a, b) {
-        return a.currentStyle[b]
-    } : b.fail("No means of obtaining computed style properties found");
-    var z;
-    (function() {
-        var a = document.createElement("div");
-        typeof a.isContentEditable == "boolean" ? z = function(a) {
-            return a && a.nodeType == 1 && a.isContentEditable
-        } : z = function(a) {
-            return !a || a.nodeType != 1 || a.contentEditable == "false" ? !1 : a.contentEditable == "true" || z(a.parentNode)
+        }();
+    "undefined" != typeof window.getComputedStyle ? W = function(e, t) {
+        return M.getWindow(e).getComputedStyle(e, null)[t]
+    } : "undefined" != typeof document.documentElement.currentStyle ? W = function(e, t) {
+        return e.currentStyle[t]
+    } : t.fail("No means of obtaining computed style properties found");
+    var j;
+    ! function() {
+        var e = document.createElement("div");
+        j = "boolean" == typeof e.isContentEditable ? function(e) {
+            return e && 1 == e.nodeType && e.isContentEditable
+        } : function(e) {
+            return e && 1 == e.nodeType && "false" != e.contentEditable ? "true" == e.contentEditable || j(e.parentNode) : !1
         }
-    })();
-    var C = /^inline(-block|-table)?$/i,
-        E = /[^\r\n\t\f \u200B]/,
-        N = M(!1),
-        O = M(!0);
-    P.prototype = {
-        doMerge: function(a) {
-            var b = [],
-                c = 0,
-                d, e, f;
-            for (var g = 0, h = this.textNodes.length, i, j; g < h; ++g) {
-                d = this.textNodes[g], e = d.parentNode;
-                if (g > 0) {
-                    e.removeChild(d), e.hasChildNodes() || e.parentNode.removeChild(e);
-                    if (a)
-                        for (i = 0; j = a[i++];) j.node == d && (j.node = this.firstTextNode, j.offset += c)
-                }
-                b[g] = d.data, c += d.data.length
+    }();
+    var z = /^inline(-block|-table)?$/i,
+        D = /[^\r\n\t\f \u200B]/,
+        $ = A(!1),
+        H = A(!0);
+    w.prototype = {
+        doMerge: function(e) {
+            for (var t, n, i, s, o, r = [], a = 0, l = 0, d = this.textNodes.length; d > l; ++l) {
+                if (t = this.textNodes[l], n = t.parentNode, l > 0 && (n.removeChild(t), n.hasChildNodes() || n.parentNode.removeChild(n), e))
+                    for (s = 0; o = e[s++];) o.node == t && (o.node = this.firstTextNode, o.offset += a);
+                r[l] = t.data, a += t.data.length
             }
-            return this.firstTextNode.data = f = b.join(""), f
+            return this.firstTextNode.data = i = r.join(""), i
         },
         getLength: function() {
-            var a = this.textNodes.length,
-                b = 0;
-            while (a--) b += this.textNodes[a].length;
-            return b
+            for (var e = this.textNodes.length, t = 0; e--;) t += this.textNodes[e].length;
+            return t
         },
         toString: function() {
-            var a = [];
-            for (var b = 0, c = this.textNodes.length; b < c; ++b) a[b] = "'" + this.textNodes[b].data + "'";
-            return "[Merge(" + a.join(",") + ")]"
+            for (var e = [], t = 0, n = this.textNodes.length; n > t; ++t) e[t] = "'" + this.textNodes[t].data + "'";
+            return "[Merge(" + e.join(",") + ")]"
         }
     };
-    var Q = ["elementTagName", "ignoreWhiteSpace", "applyToEditableOnly", "useExistingElements"],
-        R = {};
-    S.prototype = {
-        elementTagName: e,
+    var V = ["elementTagName", "ignoreWhiteSpace", "applyToEditableOnly", "useExistingElements", "removeEmptyElements"],
+        _ = {};
+    P.prototype = {
+        elementTagName: L,
         elementProperties: {},
         ignoreWhiteSpace: !0,
         applyToEditableOnly: !1,
         useExistingElements: !0,
-        copyPropertiesToElement: function(a, b, c) {
-            var d, e, f = {},
-                g, i, k, l;
-            for (var m in a)
-                if (a.hasOwnProperty(m)) {
-                    i = a[m], k = b[m];
-                    if (m == "className") h(b, i), h(b, this.cssClass), b[m] = j(b[m]), c && (f[m] = b[m]);
-                    else if (m == "style") {
-                        e = k, c && (f[m] = g = {});
-                        for (d in a[m]) e[d] = i[d], c && (g[d] = e[d]);
-                        this.attrExceptions.push(m)
-                    } else b[m] = i, c && (f[m] = b[m], l = R.hasOwnProperty(m) ? R[m] : m, this.attrExceptions.push(l))
-                }
-            return c ? f : ""
+        removeEmptyElements: !0,
+        copyPropertiesToElement: function(e, t, n) {
+            var i, r, a, l, d, u, f = {};
+            for (var p in e)
+                if (e.hasOwnProperty(p))
+                    if (l = e[p], d = t[p], "className" == p) s(t, l), s(t, this.cssClass), t[p] = o(t[p]), n && (f[p] = t[p]);
+                    else if ("style" == p) {
+                r = d, n && (f[p] = a = {});
+                for (i in e[p]) r[i] = l[i], n && (a[i] = r[i]);
+                this.attrExceptions.push(p)
+            } else t[p] = l, n && (f[p] = t[p], u = _.hasOwnProperty(p) ? _[p] : p, this.attrExceptions.push(u));
+            return n ? f : ""
         },
-        hasClass: function(a) {
-            return a.nodeType == 1 && c.arrayContains(this.tagNames, a.tagName.toLowerCase()) && g(a, this.cssClass)
+        appliesToElement: function(e) {
+            return contains(this.tagNames, e.tagName.toLowerCase())
         },
-        getSelfOrAncestorWithClass: function(a) {
-            while (a) {
-                if (this.hasClass(a)) return a;
-                a = a.parentNode
+        getEmptyElements: function(e) {
+            var t = this;
+            return e.getNodes([1], function(e) {
+                return t.appliesToElement(e) && !e.hasChildNodes()
+            })
+        },
+        hasClass: function(e) {
+            return 1 == e.nodeType && M.arrayContains(this.tagNames, e.tagName.toLowerCase()) && i(e, this.cssClass)
+        },
+        getSelfOrAncestorWithClass: function(e) {
+            for (; e;) {
+                if (this.hasClass(e)) return e;
+                e = e.parentNode
             }
             return null
         },
-        isModifiable: function(a) {
-            return !this.applyToEditableOnly || B(a)
+        isModifiable: function(e) {
+            return !this.applyToEditableOnly || v(e)
         },
-        isIgnorableWhiteSpaceNode: function(a) {
-            return this.ignoreWhiteSpace && a && a.nodeType == 3 && F(a)
+        isIgnorableWhiteSpaceNode: function(e) {
+            return this.ignoreWhiteSpace && e && 3 == e.nodeType && C(e)
         },
-        postApply: function(a, b, c, d) {
-            var e = a[0],
-                f = a[a.length - 1],
-                g = [],
-                h, i = e,
-                j = f,
-                k = 0,
-                l = f.length,
-                m, n;
-            for (var o = 0, p = a.length; o < p; ++o) m = a[o], n = N(m, !d), n ? (h || (h = new P(n), g.push(h)), h.textNodes.push(m), m === e && (i = h.firstTextNode, k = i.length), m === f && (j = h.firstTextNode, l = h.getLength())) : h = null;
-            var q = O(f, !d);
-            q && (h || (h = new P(f), g.push(h)), h.textNodes.push(q));
-            if (g.length) {
-                for (o = 0, p = g.length; o < p; ++o) g[o].doMerge(c);
-                b.setStartAndEnd(i, k, j, l)
+        postApply: function(e, t, n, i) {
+            for (var s, o, r, a = e[0], l = e[e.length - 1], d = [], u = a, f = l, p = 0, h = l.length, c = 0, g = e.length; g > c; ++c) o = e[c], r = $(o, !i), r ? (s || (s = new w(r), d.push(s)), s.textNodes.push(o), o === a && (u = s.firstTextNode, p = u.length), o === l && (f = s.firstTextNode, h = s.getLength())) : s = null;
+            var m = H(l, !i);
+            if (m && (s || (s = new w(l), d.push(s)), s.textNodes.push(m)), d.length) {
+                for (c = 0, g = d.length; g > c; ++c) d[c].doMerge(n);
+                t.setStartAndEnd(u, p, f, h)
             }
         },
-        createContainer: function(a) {
-            var b = a.createElement(this.elementTagName);
-            return this.copyPropertiesToElement(this.elementProperties, b, !1), h(b, this.cssClass), b
+        createContainer: function(e) {
+            var t = e.createElement(this.elementTagName);
+            return this.copyPropertiesToElement(this.elementProperties, t, !1), s(t, this.cssClass), t
         },
-        applyToTextNode: function(a, b) {
-            var d = a.parentNode;
-            if (d.childNodes.length == 1 && c.arrayContains(this.tagNames, d.tagName.toLowerCase()) && this.useExistingElements) h(d, this.cssClass);
+        applyToTextNode: function(e, t) {
+            var n = e.parentNode;
+            if (1 == n.childNodes.length && M.arrayContains(this.tagNames, n.tagName.toLowerCase()) && this.useExistingElements) s(n, this.cssClass);
             else {
-                var e = this.createContainer(c.getDocument(a));
-                a.parentNode.insertBefore(e, a), e.appendChild(a)
+                var i = this.createContainer(M.getDocument(e));
+                e.parentNode.insertBefore(i, e), i.appendChild(e)
             }
         },
-        isRemovable: function(a) {
-            return a.tagName.toLowerCase() == this.elementTagName && k(a) == this.elementSortedClassName && x(a, this.elementProperties) && !w(a, this.attrExceptions) && this.isModifiable(a)
+        isRemovable: function(e) {
+            return e.tagName.toLowerCase() == this.elementTagName && r(e) == this.elementSortedClassName && N(e, this.elementProperties) && !m(e, this.attrExceptions) && this.isModifiable(e)
         },
-        undoToTextNode: function(a, b, c, d) {
-            if (!b.containsNode(c)) {
-                var e = b.cloneRange();
-                e.selectNode(c), e.isPointInRange(b.endContainer, b.endOffset) && (K(c, b.endContainer, b.endOffset, d), b.setEndAfter(c)), e.isPointInRange(b.startContainer, b.startOffset) && (c = K(c, b.startContainer, b.startOffset, d))
+        isEmptyContainer: function(e) {
+            var t = e.childNodes.length;
+            return 1 == e.nodeType && this.isRemovable(e) && (0 == t || 1 == t && this.isEmptyContainer(e.firstChild))
+        },
+        removeEmptyContainers: function(e) {
+            var t = this,
+                n = (e.getNodes([1], function(e) {
+                    return t.isEmptyContainer(e)
+                }), [e]),
+                i = E(n);
+            S(n, i)
+        },
+        undoToTextNode: function(e, t, n, i) {
+            if (!t.containsNode(n)) {
+                var s = t.cloneRange();
+                s.selectNode(n), s.isPointInRange(t.endContainer, t.endOffset) && (R(n, t.endContainer, t.endOffset, i), t.setEndAfter(n)), s.isPointInRange(t.startContainer, t.startOffset) && (n = R(n, t.startContainer, t.startOffset, i))
             }
-            this.isRemovable(c) ? s(c, d) : i(c, this.cssClass)
+            this.isRemovable(n) ? p(n, i) : B(n, this.cssClass)
         },
-        applyToRange: function(a, b) {
-            b = b || [];
-            var c = G(b || []);
-            a.splitBoundariesPreservingPositions(c);
-            var d = u(a);
-            if (d.length) {
-                for (var e = 0, f; f = d[e++];) !this.isIgnorableWhiteSpaceNode(f) && !this.getSelfOrAncestorWithClass(f) && this.isModifiable(f) && this.applyToTextNode(f, c);
-                a.setStart(d[0], 0), f = d[d.length - 1], a.setEnd(f, f.length), this.normalize && this.postApply(d, a, c, !1), H(b, c)
+        applyToRange: function(e, t) {
+            t = t || [];
+            var n = E(t || []);
+            e.splitBoundariesPreservingPositions(n), this.removeEmptyElements && this.removeEmptyContainers(e);
+            var i = c(e);
+            if (i.length) {
+                for (var s, o = 0; s = i[o++];) !this.isIgnorableWhiteSpaceNode(s) && !this.getSelfOrAncestorWithClass(s) && this.isModifiable(s) && this.applyToTextNode(s, n);
+                e.setStart(i[0], 0), s = i[i.length - 1], e.setEnd(s, s.length), this.normalize && this.postApply(i, e, n, !1), S(t, n)
+            }
+            var r = this.getEmptyElements(e);
+            forEach(r, function(e) {
+                addClass(e, this.className)
+            })
+        },
+        applyToRanges: function(e) {
+            for (var t = e.length; t--;) this.applyToRange(e[t], e);
+            return e
+        },
+        applyToSelection: function(t) {
+            var n = e.getSelection(t);
+            n.setRanges(this.applyToRanges(n.getAllRanges()))
+        },
+        undoToRange: function(e, t) {
+            t = t || [];
+            var n = E(t);
+            e.splitBoundariesPreservingPositions(n);
+            var i, s, o = c(e),
+                r = o[o.length - 1];
+            if (o.length) {
+                for (var a = 0, l = o.length; l > a; ++a) i = o[a], s = this.getSelfOrAncestorWithClass(i), s && this.isModifiable(i) && this.undoToTextNode(i, e, s, n), e.setStart(o[0], 0), e.setEnd(r, r.length);
+                this.normalize && this.postApply(o, e, n, !0), S(t, n)
             }
         },
-        applyToRanges: function(a) {
-            var b = a.length;
-            while (b--) this.applyToRange(a[b], a);
-            return a
+        undoToRanges: function(e) {
+            for (var t = e.length; t--;) this.undoToRange(e[t], e);
+            return e.forEach(function(e) {}), e
         },
-        applyToSelection: function(b) {
-            var c = a.getSelection(b);
-            c.setRanges(this.applyToRanges(c.getAllRanges()))
+        undoToSelection: function(t) {
+            var n = e.getSelection(t),
+                i = e.getSelection(t).getAllRanges();
+            this.undoToRanges(i), n.setRanges(i)
         },
-        undoToRange: function(a, b) {
-            b = b || [];
-            var c = G(b);
-            a.splitBoundariesPreservingPositions(c);
-            var d = u(a),
-                e, f, g = d[d.length - 1];
-            if (d.length) {
-                for (var h = 0, i = d.length; h < i; ++h) e = d[h], f = this.getSelfOrAncestorWithClass(e), f && this.isModifiable(e) && this.undoToTextNode(e, a, f, c), a.setStart(d[0], 0), a.setEnd(g, g.length);
-                this.normalize && this.postApply(d, a, c, !0), H(b, c)
-            }
+        getTextSelectedByRange: function(e, t) {
+            var n = t.cloneRange();
+            n.selectNodeContents(e);
+            var i = n.intersection(t),
+                s = i ? i.toString() : "";
+            return n.detach(), s
         },
-        undoToRanges: function(a) {
-            var b = a.length;
-            while (b--) this.undoToRange(a[b], a);
-            return a.forEach(function(a) {}), a
-        },
-        undoToSelection: function(b) {
-            var c = a.getSelection(b),
-                d = a.getSelection(b).getAllRanges();
-            this.undoToRanges(d), c.setRanges(d)
-        },
-        getTextSelectedByRange: function(a, b) {
-            var c = b.cloneRange();
-            c.selectNodeContents(a);
-            var d = c.intersection(b),
-                e = d ? d.toString() : "";
-            return c.detach(), e
-        },
-        isAppliedToRange: function(a) {
-            if (a.collapsed) return !!this.getSelfOrAncestorWithClass(a.commonAncestorContainer);
-            var b = a.getNodes([3]);
-            for (var c = 0, d; d = b[c++];)
-                if (!this.isIgnorableWhiteSpaceNode(d) && t(a, d) && this.isModifiable(d) && !this.getSelfOrAncestorWithClass(d)) return !1;
+        isAppliedToRange: function(e) {
+            if (e.collapsed) return !!this.getSelfOrAncestorWithClass(e.commonAncestorContainer);
+            for (var t, n = e.getNodes([3]), i = 0; t = n[i++];)
+                if (!this.isIgnorableWhiteSpaceNode(t) && h(e, t) && this.isModifiable(t) && !this.getSelfOrAncestorWithClass(t)) return !1;
             return !0
         },
-        isAppliedToRanges: function(a) {
-            var b = a.length;
-            while (b--)
-                if (!this.isAppliedToRange(a[b])) return !1;
+        isAppliedToRanges: function(e) {
+            for (var t = e.length; t--;)
+                if (!this.isAppliedToRange(e[t])) return !1;
             return !0
         },
-        isAppliedToSelection: function(b) {
-            var c = a.getSelection(b);
-            return this.isAppliedToRanges(c.getAllRanges())
+        isAppliedToSelection: function(t) {
+            var n = e.getSelection(t);
+            return this.isAppliedToRanges(n.getAllRanges())
         },
-        toggleRange: function(a) {
-            this.isAppliedToRange(a) ? this.undoToRange(a) : this.applyToRange(a)
+        toggleRange: function(e) {
+            this.isAppliedToRange(e) ? this.undoToRange(e) : this.applyToRange(e)
         },
-        toggleRanges: function(a) {
-            this.isAppliedToRanges(a) ? this.undoToRanges(a) : this.applyToRanges(a)
+        toggleRanges: function(e) {
+            this.isAppliedToRanges(e) ? this.undoToRanges(e) : this.applyToRanges(e)
         },
-        toggleSelection: function(a) {
-            this.isAppliedToSelection(a) ? this.undoToSelection(a) : this.applyToSelection(a)
+        toggleSelection: function(e) {
+            this.isAppliedToSelection(e) ? this.undoToSelection(e) : this.applyToSelection(e)
         },
         detach: function() {}
-    }, S.util = {
-        hasClass: g,
-        addClass: h,
-        removeClass: i,
-        hasSameClasses: l,
-        replaceWithOwnChildren: s,
-        elementsHaveSameNonClassAttributes: v,
-        elementHasNonClassAttributes: w,
-        splitNodeAt: K,
-        isEditableElement: z,
-        isEditingHost: A,
-        isEditable: B
-    }, a.CssClassApplier = S, a.createCssClassApplier = T
-})
+    }, P.util = {
+        hasClass: i,
+        addClass: s,
+        removeClass: B,
+        hasSameClasses: a,
+        replaceWithOwnChildren: p,
+        elementsHaveSameNonClassAttributes: g,
+        elementHasNonClassAttributes: m,
+        splitNodeAt: R,
+        isEditableElement: j,
+        isEditingHost: y,
+        isEditable: v
+    }, e.CssClassApplier = P, e.createCssClassApplier = O
+});
