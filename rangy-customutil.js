@@ -1,3 +1,12 @@
+/**
+ * Custom Utilities for Rangy. Compares, finds and locates range.
+ *
+ * Part of Rangy, a cross-browser JavaScript range and selection library
+ *
+ * Depends on Rangy core.
+ *
+ * Author: Leo.Zhang Licensed under the MIT license. Build date: 21 August 2012
+ */
 rangy.createModule("CustomUtil", function(api, module) {
     api.requireModules(["DomUtil", "WrappedRange"]);
     var dom = api.dom;
@@ -115,7 +124,8 @@ rangy.createModule("CustomUtil", function(api, module) {
 
     function getRangePosition(range, text) {
         if (range == null) {
-            var selection = rangy.getSelection();
+            //var selection = rangy.getSelection();
+            var selection = options.selection || rangy.getSelection(this.doc);
             range = selection.getRangeAt(0);
         }
 
@@ -184,15 +194,59 @@ rangy.createModule("CustomUtil", function(api, module) {
 
         return start;
     }
+
+    function saveSelection(win) {
+        if (!api.isSelectionValid(win)) {
+            module.warn("Cannot save selection. This usually happens when the selection is collapsed and the selection document has  lost focus.");
+            return null;
+        }
+        var sel = api.getSelection(win);
+        var ranges = sel.getAllRanges();
+        var backward = (ranges.length == 1 && sel.isBackward());
+
+        var rangeInfos = saveRanges(ranges, backward);
+
+        // Ensure current selection is unaffected
+        if (backward) {
+            sel.setSingleRange(ranges[0], backward);
+        } else {
+            sel.setRanges(ranges);
+        }
+
+        return {
+            win: win,
+            rangeInfos: rangeInfos,
+            restored: false
+        };
+    }
+
+    function restoreSelection(savedSelection, preserveDirection) {
+        if (!savedSelection.restored) {
+            var rangeInfos = savedSelection.rangeInfos;
+            var sel = api.getSelection(savedSelection.win);
+            var ranges = restoreRanges(rangeInfos),
+                rangeCount = rangeInfos.length;
+
+            if (rangeCount == 1 && preserveDirection && api.features.selectionHasExtend && rangeInfos[0].backward) {
+                sel.removeAllRanges();
+                sel.addRange(ranges[0], true);
+            } else {
+                sel.setRanges(ranges);
+            }
+
+            savedSelection.restored = true;
+        }
+    }
     api.util.extend(api, {
         compareRange: compareRange,
         getRangeText: getRangeText,
         getRangesByText: getRangesByText,
         getRangeByTextPosition: getRangeByTextPosition,
         getRangePosition: getRangePosition,
+        saveSelection: saveSelection,
+        restoreSelection: restoreSelection,
         getRangesByClassName: getRangesByClassName,
         getTextStartOffset: getTextStartOffset,
         refreshCache: cacheContents
     });
-
 });
